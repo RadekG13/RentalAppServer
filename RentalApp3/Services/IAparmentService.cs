@@ -13,6 +13,8 @@ namespace RentalApp3.Services
         Task<Response2> AddApartment(Apartment model);
         IEnumerable<Apartment> GetSavedApartments(string ID);
 
+        Task<Response2> AddRoom(Room model);
+        string GetApartmentId(string ID, string title);
 
     }
 
@@ -51,10 +53,48 @@ namespace RentalApp3.Services
 
         }
 
+        public async Task<Response2> AddRoom(Room model)
+        {
+            var result = await _context.rooms.AddAsync(model);
+            _context.SaveChanges(); 
+
+            if (_context.rooms.Any(o=>o.RoomId==model.RoomId))
+            {
+                return new Response2
+                {
+                    Message = "Room created!",
+                    IsSuccess = true,
+                };
+            }
+            return new Response2
+            {
+                Message = "Room did not create:",
+                IsSuccess = false,
+
+            };
+        }
+
         public IEnumerable<Apartment> GetSavedApartments(string ID)
         {
             return _context.apartments.Where(t => t.AppUserID == ID).AsEnumerable();
         }
+
+        public string GetApartmentId(string ID, string title)
+        {
+            IEnumerable<Apartment> apartments = GetSavedApartments(ID);
+
+            foreach (Apartment apartment in apartments)
+            {
+                if (apartment.Title == title)
+                {
+                    return apartment.ApartmentId;
+                }
+            }
+
+            return null; ///???????????
+
+             }
+
     }
 
 

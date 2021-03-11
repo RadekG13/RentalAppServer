@@ -36,7 +36,7 @@ namespace RentalApp3.Controllers
             if (fileObj.file.Length > 0)
             {
 
-                
+
                 using (var ms = new MemoryStream())
                 {
                     if (ms.Length < 2097152) // Upload the file if less than 2 MB
@@ -63,21 +63,21 @@ namespace RentalApp3.Controllers
 
 
         }
-        
+
         [HttpGet("getapartment")]
         public string GetSavedApartmentsByUserId() ///tutaj sprawdzic
         {
 
-           string ID = this.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            string ID = this.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
             var apartments = _service.GetSavedApartments(ID);
 
-            foreach(Apartment apartment in apartments)
+            foreach (Apartment apartment in apartments)
             {
                 apartment.Photo = this.GetImage(Convert.ToBase64String(apartment.Photo));
             }
 
-           
+
             return JsonConvert.SerializeObject(apartments);
         }
 
@@ -91,5 +91,51 @@ namespace RentalApp3.Controllers
             return bytes;
         }
 
+
+        [HttpPost("room")]
+        public async Task<IActionResult> SaveRoom([FromForm] RoomUploadModel fileObj)
+        {
+            Room room = JsonConvert.DeserializeObject<Room>(fileObj.Rooms);
+
+            room.RoomId = Guid.NewGuid().ToString();
+
+            string UserID = this.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            string apartmentId = _service.GetApartmentId(UserID, fileObj.ApartmentTitle);
+
+            room.ApartmentId = apartmentId;
+
+
+            if (fileObj.file.Length > 0)
+            {
+
+
+                using (var ms = new MemoryStream())
+                {
+                    if (ms.Length < 2097152) // Upload the file if less than 2 MB
+                    {
+                        fileObj.file.CopyTo(ms);
+                        var fileBytes = ms.ToArray();
+                        room.Photo = fileBytes;
+
+
+                        var result = await _service.AddRoom(room);
+                        if (result.IsSuccess)
+                        {
+                            return Ok(result);
+                        }
+                        return BadRequest(result);
+                    }
+                    else
+                    {
+                        return BadRequest("The Photo size is too large");
+                    }
+                }
+            }
+            return BadRequest("something else doesn't work"); //sprawdzic co
+
+
+
+        }
     }
 }

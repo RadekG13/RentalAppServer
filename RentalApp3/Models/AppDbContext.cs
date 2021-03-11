@@ -16,5 +16,6 @@ namespace RentalApp3.Models
 
         public DbSet<AppUser> users { get; set; }
         public DbSet<Apartment> apartments { get; set; }
+        public DbSet<Room> rooms { get; set; }
     }
 }
