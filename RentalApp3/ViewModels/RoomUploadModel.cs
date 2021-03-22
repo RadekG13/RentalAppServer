@@ -9,7 +9,7 @@ namespace RentalApp3.ViewModels
     public class RoomUploadModel
     {
 
-        public string ApartmentTitle { get; set; }
+        public string ApartmentId { get; set; }
 
         public IFormFile file { get; set; }
 

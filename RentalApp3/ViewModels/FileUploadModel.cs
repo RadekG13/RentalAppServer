@@ -8,7 +8,7 @@ namespace RentalApp3.ViewModels
 {
     public class FileUploadModel
     {
-        public int Id { get; set; }
+        public string Id { get; set; }
 
         public IFormFile file {get; set;}
 

@@ -18,6 +18,8 @@ namespace RentalApp3.Models
 
         public int RentFee { get; set; }
 
+        public bool Status { get; set; }
+
         public string ApartmentId { get; set; }
         public virtual Apartment Apartment { get; set; }
 
