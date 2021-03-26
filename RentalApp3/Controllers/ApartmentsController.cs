@@ -33,7 +33,7 @@ namespace RentalApp3.Controllers
             apartment.AppUserID = this.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
             apartment.ApartmentId = Guid.NewGuid().ToString();
 
-            if (fileObj.file.Length > 0)
+            if (fileObj.file.Length > 0) //tutaj zaminic bo jak jest zero to i tak wywala exception 
             {
 
 
@@ -72,10 +72,7 @@ namespace RentalApp3.Controllers
 
             var apartments = _service.GetSavedApartments(ID);
 
-            //foreach (Apartment apartment in apartments)
-            //{
-            //    apartment.Photo = this.GetImage(Convert.ToBase64String(apartment.Photo)); //czy to ma sens? XDDDDDDDDD
-            //}
+           
             if (apartments == null)
             {
                 return NotFound();
@@ -117,8 +114,8 @@ namespace RentalApp3.Controllers
 
         }
 
-       [HttpPut]
-        public IActionResult EditApartment([FromForm] FileUploadModel fileObj)
+       [HttpPut("{id}")]
+        public IActionResult EditApartment(string id, [FromForm] FileUploadModel fileObj)
         {
             string UserId = this.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
@@ -130,7 +127,7 @@ namespace RentalApp3.Controllers
                     return BadRequest("Wrong or null object");
                 }
 
-                var existingApartment = _service.GetApartment(UserId, fileObj.Id);
+                var existingApartment = _service.GetApartment(UserId, id);
 
                 if(existingApartment==null)
                 {
@@ -139,7 +136,7 @@ namespace RentalApp3.Controllers
 
                 Apartment apartment = JsonConvert.DeserializeObject<Apartment>(fileObj.Apartments);
                 apartment.AppUserID = this.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-                apartment.ApartmentId = fileObj.Id;
+                apartment.ApartmentId = id;
 
                 if (fileObj.file.Length > 0)
                 {
@@ -197,9 +194,9 @@ namespace RentalApp3.Controllers
                 return BadRequest(result);
 
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return BadRequest("Could not delete");
+                return BadRequest("Could not delete: "+ e);
             }
          
 
@@ -208,8 +205,8 @@ namespace RentalApp3.Controllers
         
         //------------------------------------------------------------------------------------------------------------------
 
-        [HttpPost("rooms")] 
-        public async Task<IActionResult> CreateRoom([FromForm] RoomUploadModel fileObj)
+        [HttpPost("{apartmentId}/rooms")] 
+        public async Task<IActionResult> CreateRoom(string apartmentId, [FromForm] RoomUploadModel fileObj)
         {
             Room room = JsonConvert.DeserializeObject<Room>(fileObj.Rooms);
 
@@ -220,12 +217,12 @@ namespace RentalApp3.Controllers
             
 
 
-            Apartment apartment = _service.GetApartmentById(fileObj.ApartmentId);
+            Apartment apartment = _service.GetApartmentById(apartmentId);
 
             if (apartment.AppUserID == userId)
             {
 
-                room.ApartmentId = fileObj.ApartmentId; //tutaj można chyba do room dać w androidzie, ale to trzeba zmienić roomupload model
+                room.ApartmentId = apartmentId; //tutaj można chyba do room dać w androidzie, ale to trzeba zmienić roomupload model
                 room.Status = false;
 
                 if (fileObj.file.Length > 0)
@@ -261,7 +258,7 @@ namespace RentalApp3.Controllers
 
         }
 
-        [HttpGet("rooms")] 
+        [HttpGet("{apartmentId}/rooms")] 
         public IActionResult GetRooms(string apartmentId)
         {
             string UserID = this.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
@@ -269,7 +266,14 @@ namespace RentalApp3.Controllers
             var apartment = _service.GetApartmentById(apartmentId);
             if (apartment.AppUserID == UserID)
             {
-                var rooms = _service.GetSavedRooms(apartmentId); 
+                var rooms = _service.GetSavedRooms(apartmentId); //sprawdzić null
+
+                if (rooms == null)
+                {
+                    return NotFound();
+                }
+
+
                 return Ok(JsonConvert.SerializeObject(rooms));
             }
             return BadRequest("Wrong user!");
@@ -278,8 +282,8 @@ namespace RentalApp3.Controllers
         }
 
 
-        [HttpPut("rooms/{id}")] 
-        public IActionResult EditRoom(string id, [FromForm] RoomUploadModel fileObj)
+        [HttpPut("{apartmentId}/rooms/{id}")] 
+        public IActionResult EditRoom(string apartmentId, string id, [FromForm] RoomUploadModel fileObj)
         {
 
             string UserId = this.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
@@ -292,7 +296,7 @@ namespace RentalApp3.Controllers
                     return BadRequest("Wrong or null object");
                 }
 
-                var existingRoom = _service.GetSavedRoom(fileObj.ApartmentId, id);
+                var existingRoom = _service.GetSavedRoom(apartmentId, id);
 
                 if (existingRoom == null)
                 {
@@ -302,7 +306,7 @@ namespace RentalApp3.Controllers
                 Room room = JsonConvert.DeserializeObject<Room>(fileObj.Rooms);
             
                 room.RoomId = id;
-                room.ApartmentId = fileObj.ApartmentId;
+                room.ApartmentId = apartmentId;
 
 
                 if (fileObj.file.Length > 0)
@@ -353,7 +357,7 @@ namespace RentalApp3.Controllers
 
         }
 
-        [HttpDelete("rooms/{id}")]
+        [HttpDelete("{apartmentId}/rooms/{id}")]
         public IActionResult DeleteRoom(string id, string apartmentId)
         {
             string userId = this.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
@@ -390,6 +394,28 @@ namespace RentalApp3.Controllers
             {
                 return BadRequest("Wrong user"); 
             }
+        }
+
+
+        [HttpGet("{apartmentId}/rooms/{id}")]
+        public IActionResult GetRoomById(string apartmentId, string id)
+        {
+            string UserId = this.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            var apartment = _service.GetApartmentById(apartmentId);
+            if (apartment.AppUserID == UserId)
+            {
+                var room = _service.GetSavedRoom(apartmentId, id);
+
+                if (room == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(JsonConvert.SerializeObject(room));
+            }
+            return BadRequest("Wrong user!");
+
         }
 
 

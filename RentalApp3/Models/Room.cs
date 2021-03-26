@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace RentalApp3.Models
@@ -21,6 +23,9 @@ namespace RentalApp3.Models
         public bool Status { get; set; }
 
         public string ApartmentId { get; set; }
+
+        [JsonIgnore]
+        [IgnoreDataMember]
         public virtual Apartment Apartment { get; set; }
 
 

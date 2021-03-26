@@ -39,6 +39,8 @@ namespace RentalApp3
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
 
+
+
             //Identity configuration
             services.AddIdentity<AppUser, IdentityRole>(options =>
             {

@@ -60,7 +60,6 @@ namespace RentalApp3.Services
 
         }
 
-        
 
         public IEnumerable<Apartment> GetSavedApartments(string ID)
         {
@@ -77,7 +76,7 @@ namespace RentalApp3.Services
         }
 
 
-        //to bez sensu
+       
         public Apartment GetApartmentById(string ID)
         {
 
@@ -89,9 +88,6 @@ namespace RentalApp3.Services
           
 
         }
-
-
-       
 
         public  Response2 UpdateApartment(Apartment apartment)
         {
@@ -131,11 +127,18 @@ namespace RentalApp3.Services
 
             //usunąć mieszkanie i pokoje
 
+            var rooms = _context.rooms.Where(t => t.ApartmentId == id);
+
+            _context.rooms.RemoveRange(rooms);
+
+            _context.SaveChanges();
 
             var apartment = _context.apartments.FirstOrDefault(t => t.ApartmentId == id);
 
+        //    var apartment2 = _context.apartments.OrderBy(t=>t.Title).
 
-             _context.apartments.Remove(apartment);
+            //   _context.apartments.Remove(apartment);
+            _context.apartments.Remove(apartment);
 
 
             _context.SaveChanges();
@@ -159,11 +162,10 @@ namespace RentalApp3.Services
         }
 
         //----------------------------------------------------------------------------------------------------------------
-        public IEnumerable<Room> GetSavedRooms( string ID)
+        public IEnumerable<Room> GetSavedRooms(string apartmentID)
         {
-            return _context.rooms.Where(t => t.ApartmentId == ID).AsEnumerable();
+            return _context.rooms.Where(t => t.ApartmentId == apartmentID).AsEnumerable();
         }
-
 
         public async Task<Response2> AddRoom(Room model)
         {

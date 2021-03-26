@@ -20,7 +20,10 @@ namespace RentalApp3.Models
 
         public byte[] Photo { get; set; }
 
-        
+
+        public IList<Room> Rooms { get; } = new List<Room>();
+
+
 
 
     }
